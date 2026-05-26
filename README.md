@@ -61,15 +61,8 @@ BiLSTM‑Attention	0.370	0.188
 All figures and tables from the paper are reproduced.
 
 Citation
-If you use this code, please cite:
+If you use this code, please cite
 
-bibtex
-@article{siyam2025waking,
-  title={Waking Up to the Truth: A Simple Random Forest Outperforms Deep Learning for Wearable Sleep Staging},
-  author={Siyam, Md. Tanvir Hasan},
-  journal={Biomedical Signal Processing and Control},
-  year={2025},
-  note={submitted}
-}
+
 License
 MIT
