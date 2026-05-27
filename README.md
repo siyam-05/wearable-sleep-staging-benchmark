@@ -1,7 +1,6 @@
 
 # Wearable Sleep Staging Benchmark: Random Forest vs Deep Learning
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.XXXXXX.svg)](https://doi.org/10.5281/zenodo.XXXXXX)
 
 This repository provides the complete code and data pipeline for the paper:
 
