@@ -1,5 +1,16 @@
- 1. Data loading & feature extraction
-# ------------------------------
+
+---
+
+## 4. `src/load_data.py`
+
+```python
+"""Data loading, feature extraction, and per-subject normalisation."""
+
+import numpy as np
+import pandas as pd
+import scipy.io
+from pathlib import Path
+from tqdm import tqdm
 
 def get_rec_start(mat, hr_df):
     """Parse recStart from .mat file (string, datenum, or numeric)."""
@@ -15,7 +26,11 @@ def get_rec_start(mat, hr_df):
     return float(hr_df['timestamp'].min()) - 3600
 
 def load_one_night(night_dir):
-    """Load one night, extract 18 features per 30‑s epoch."""
+    """
+    Load one night, extract 18 features per 30‑s epoch.
+    Returns (features, labels) or (None, None) if invalid.
+    Labels are converted from 1..5 to 0..4.
+    """
     night_dir = Path(night_dir)
     mat = scipy.io.loadmat(str(night_dir / 'labels.mat'))
     if 'dreem_label' in mat:
@@ -24,6 +39,8 @@ def load_one_night(night_dir):
         labels = mat['dream_label'].squeeze().astype(int)
     else:
         return None, None
+    # Convert labels from 1..5 to 0..4
+    labels = labels - 1
     n_epochs = len(labels)
 
     hr = pd.read_csv(night_dir / 'hr.csv', header=None, names=['timestamp', 'bpm'])
@@ -84,7 +101,10 @@ def load_one_night(night_dir):
     return features[valid], labels[valid]
 
 def load_all_subjects(data_root):
-    """Load all nights, apply per-subject z-score normalisation."""
+    """
+    Load all nights, apply per-subject z-score normalisation.
+    Returns dictionary: key = "subjectID_nightID", value = (features, labels).
+    """
     data_root = Path(data_root)
     subjects = sorted([d for d in data_root.iterdir() if d.is_dir()])
     data_dict = {}
@@ -93,7 +113,7 @@ def load_all_subjects(data_root):
         for night in nights:
             feats, lbls = load_one_night(night)
             if feats is not None and len(feats) > 10:
-                # per-subject normalisation (no leakage)
+                # Per-subject normalisation (mean/std computed only from this subject)
                 mu = feats.mean(axis=0)
                 std = feats.std(axis=0)
                 std[std == 0] = 1.0

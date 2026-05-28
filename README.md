@@ -1,67 +1,57 @@
+markdown
+# Wearable Sleep Staging Benchmark
 
-# Wearable Sleep Staging Benchmark: Random Forest vs Deep Learning
+**Paper:** *Waking Up to the Truth: When Simplicity Prevails — A Validated Random Forest Baseline Challenges Deep Learning for Wearable Five-Class Sleep Staging*  
+**Author:** Md. Tanvir Hasan Siyam
 
+This repository provides the complete, reproducible code for the above paper.  
+We benchmark five‑class sleep staging (Wake, N1, N2, N3, REM) using only wrist‑worn heart rate and accelerometry from 47 subjects (253 nights). A Random Forest achieves **81.0% accuracy, Cohen’s κ = 0.64**, outperforming BiLSTM‑Attention, SVM, and logistic regression under strict **Leave‑One‑Subject‑Out** cross‑validation.
 
-This repository provides the complete code and data pipeline for the paper:
+## Dataset
 
-**"Waking Up to the Truth: A Simple Random Forest Outperforms Deep Learning for Wearable Sleep Staging"**  
-*Md. Tanvir Hasan Siyam*  
-(Submitted to *Biomedical Signal Processing and Control*)
+The study uses the public dataset:  
+*Multi‑night Instantaneous Heart Rate and Accelerometry Dataset with EEG Sleep Stage Labels* (version 1.0.0)  
+PhysioNet DOI: [10.13026/a0sy-7t69](https://doi.org/10.13026/a0sy-7t69)
 
-## Overview
+Download and place the contents under `data/` so that each subject folder (e.g., `sub-01/`) contains `hr.csv`, `motion.csv`, and `labels.mat`.
 
-We benchmark sleep stage classification (Wake, N1, N2, N3, REM) using only heart rate (HR) and accelerometry (ACC) from 47 subjects. The Random Forest achieves **81% accuracy** and **Cohen’s kappa = 0.64**, outperforming BiLSTM‑attention, SVM, and logistic regression.
+## Installation
 
-## Requirements
-
-- Python 3.8+
-- Install dependencies: `pip install -r requirements.txt`
-
-## Data
-
-The dataset is publicly available:  
-[Multi‑night instantaneous heart rate and accelerometry dataset with EEG sleep stage labels (v1.0.0)](https://physionet.org/...).  
-The script will automatically download or you must place the files in `data/` as described.
-
-## Usage
-
-1. Clone the repository:  
-   ```bash
-   git clone https://github.com/yourusername/wearable-sleep-staging-benchmark.git
-   cd wearable-sleep-staging-benchmark
-Install dependencies:
-
-bash
+```bash
+git clone https://github.com/siyam-05/wearable-sleep-staging-benchmark.git
+cd wearable-sleep-staging-benchmark
 pip install -r requirements.txt
+Usage
+Set the data path in src/run_all.py (line DATA_ROOT = "data/").
+
 Run the full pipeline:
 
 bash
-python src/run_pipeline.py
+python src/run_all.py
 This will:
 
-Load and preprocess the data
+Load and preprocess all nights (per‑subject normalisation)
 
-Extract 18 features
+Perform LOSO‑CV for Random Forest (and optionally other models)
 
-Train Random Forest, SVM, LR, BiLSTM
+Print classification metrics (accuracy, κ, F1 per stage)
 
-Perform LOSO cross‑validation
+Save the confusion matrix (results/fig2_rt_confusion.png)
 
-Generate all figures (saved in results/figures/)
+Save Gini importance (results/fig6_feature_importance.png)
 
-Save tables (CSV) in results/tables/
+Save per‑subject κ boxplot (results/fig7_per_subject_kappa.png)
 
-Results Summary
-Model	Accuracy	Kappa
-Random Forest	0.810	0.64
-SVM (RBF)	0.431	0.21
-Logistic Regression	0.267	0.12
-BiLSTM‑Attention	0.370	0.188
-All figures and tables from the paper are reproduced.
+Results (reproduced)
+Model	Accuracy	Cohen’s κ	Macro F1	Weighted F1
+Random Forest	0.810	0.64	0.65	0.78
+BiLSTM‑Attention	~0.58	0.19	0.35	0.37
+SVM (RBF)	0.431	0.21	0.35	0.42
+Logistic Reg.	0.267	0.12	0.29	0.31
+Per‑stage F1 for Random Forest: Wake 0.53, N1 0.11, N2 0.86, N3 0.76, REM 0.84.
 
 Citation
-If you use this code, please cite
-
+If you use this code, please cite the original paper (once published) and the PhysioNet dataset.
 
 License
 MIT

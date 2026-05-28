@@ -1,15 +1,31 @@
 
-2. LOSO cross-validation for multiple models
-# ------------------------------
+"""LOSO cross-validation for Random Forest, SVM, Logistic Regression, and BiLSTM-Attention."""
+
+import numpy as np
+from tqdm import tqdm
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import cohen_kappa_score
+import tensorflow as tf
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Input, Conv1D, Dropout, Bidirectional, LSTM, Dense, Attention, Flatten
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.callbacks import EarlyStopping
 
 def train_evaluate_loso(data_dict, model_type='rf', window_size=20):
-    """Leave-One-Subject-Out CV for a given model type."""
+    """
+    Leave-One-Subject-Out cross-validation.
+    model_type: 'rf', 'svm', 'logreg', 'bilstm'
+    Returns: (y_true_all, y_pred_all, per_subject_kappa)
+    """
     all_y_true = []
     all_y_pred = []
     kappas = []
     subject_ids = sorted(set(k.split('_')[0] for k in data_dict.keys()))
 
     for test_subj in tqdm(subject_ids, desc=f"LOSO CV ({model_type})"):
+        # Split data
         X_train_list, y_train_list = [], []
         X_test_list, y_test_list = [], []
         for key, (feats, lbls) in data_dict.items():
@@ -47,7 +63,7 @@ def train_evaluate_loso(data_dict, model_type='rf', window_size=20):
             y_pred = model.predict(X_test)
 
         elif model_type == 'bilstm':
-            # build sliding windows (20 epochs, label = central epoch)
+            # Build sliding windows (20 epochs, label = central epoch)
             def create_sequences(data, labels, w=window_size):
                 X_seq, y_seq = [], []
                 for i in range(len(data) - w + 1):
@@ -84,7 +100,7 @@ def train_evaluate_loso(data_dict, model_type='rf', window_size=20):
                       callbacks=[early_stop], verbose=0)
             y_pred_seq = model.predict(X_te_seq, verbose=0).argmax(axis=1)
 
-            # align predictions with original test set (only central epochs)
+            # Align predictions with original test set (only central epochs)
             y_pred = np.full(len(y_test), -1, dtype=int)
             offset = window_size // 2
             y_pred[offset:offset + len(y_pred_seq)] = y_pred_seq
